@@ -110,7 +110,7 @@ darr_count (void *s_arr)
     if (!s_arr)
     {
         errno = EINVAL;
-        return NULL;
+        return 0;
     }
 
     s = DARR_REMOVE_HEADER (s_arr, data);
