@@ -4,12 +4,14 @@
 #include <errno.h>
 #include "sei.h"
 #include <stddef.h>
+#include <stdio.h>
 
 
 size_t
 log2s (size_t x)
 {
-    return sizeof (size_t) * CHAR_BIT - clz(x) - 1;
+    size_t result = sizeof (size_t) * CHAR_BIT - clzll(x) - 1;
+    return result;
 }
 
 
@@ -21,7 +23,8 @@ pow2s (size_t x)
         errno = ERANGE;
         return 0;
     }
-    return 1 << x;
+    size_t result = (size_t)1 << x;
+    return result;
 }
 
 

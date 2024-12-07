@@ -2,8 +2,14 @@
 #include "darr.h"
 #include <errno.h>
 #include <stdio.h>
+#include <stdint.h>
+#include <stdlib.h>
 #include <string.h>
 
+
+struct tests {
+    char m[2];
+};
 
 void
 log_error (char *msg)
@@ -15,6 +21,9 @@ log_error (char *msg)
 int
 main (int argc, char **argv)
 {
+    const size_t half_overflow    = 9223372036854775808;
+    const size_t quarter_overflow = 4611686018427387904;
+    const size_t eighth_overflow  = 2305843009213693952;
 
     errno = 0;
     int *darr = DARR_INIT (int, 0);

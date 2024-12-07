@@ -7,6 +7,8 @@
 #include <stdint.h>
 
 #define clz(x) __builtin_clz(x)
+#define clzll(x) __builtin_clzll(x)
+
 #define popcount(x) __builtin_popcount(x)
 #define popcountll(x) __builtin_popcountll(x)
 #define PRECISION(x) popcount (x)

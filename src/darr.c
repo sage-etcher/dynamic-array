@@ -172,6 +172,7 @@ static dynamic_array_t *
 darr_i_realloc (dynamic_array_t *s)
 {
     size_t new_alloc = 0;
+    size_t new_size  = 0;
 
     /* no null ptrs pls */
     if (!s)
@@ -192,7 +193,8 @@ darr_i_realloc (dynamic_array_t *s)
         errno = ERANGE;
         return NULL;
     }
-    void *temp = realloc (s, s->type_size * new_alloc + sizeof (dynamic_array_t));
+    new_size = s->type_size * new_alloc + sizeof (dynamic_array_t);
+    void *temp = realloc (s, new_size);
     if (!temp) return NULL;
     s = temp;
     s->alloc = new_alloc;
