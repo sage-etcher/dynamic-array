@@ -80,7 +80,7 @@ darr_pop (void *s_arr)
     s = DARR_REMOVE_HEADER (s_arr, data);
     if (darr_i_sub (s, 1)) return NULL;
 
-    return &(s->data[s->count]);
+    return (void *)(s->data + (s->count * s->type_size));
 }
 
 
@@ -259,7 +259,7 @@ darr_i_sub (dynamic_array_t *s, size_t n)
         return 1;
     }
 
-    if (SEI_SUB_SIZE (n, s->count))
+    if (SEI_SUB_SIZE (s->count, n))
     {
         s->count = 0;
         errno = ERANGE;
