@@ -133,35 +133,6 @@ darr_free (void *s_arr)
 
 
 static dynamic_array_t *
-darr_i_init_old (size_t type_size)
-{
-    const size_t base_alloc = 2; /* log2 and pow2 in extend require this */
-    dynamic_array_t *s = NULL;
-
-    if (type_size == 0)
-    {
-        errno = EINVAL;
-        return NULL;
-    }
-
-    if ((SEI_MULT_SIZE (type_size, base_alloc)) ||
-        (SEI_ADD_SIZE (sizeof (dynamic_array_t), (type_size * base_alloc))))
-    {
-        errno = ERANGE;
-        return NULL;
-    }
-    s = malloc (type_size * base_alloc + sizeof (dynamic_array_t));
-    if (!s) return NULL;
-
-    s->type_size = type_size;
-    s->alloc     = base_alloc;
-    s->count     = 0;
-
-    return s;
-}
-
-
-static dynamic_array_t *
 darr_i_init (size_t type_size, size_t n)
 {
     errno_t ret_alloc;
