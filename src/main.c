@@ -1,17 +1,37 @@
 
-
 #include "darr.h"
+#include <errno.h>
+#include <stdio.h>
+#include <string.h>
+
+
+void
+log_error (char *msg)
+{
+    fprintf (stderr, "error: %s: %d: %s\n", msg, errno, strerror (errno));
+}
 
 
 int
 main (int argc, char **argv)
 {
+
+    errno = 0;
     int *darr = DARR_INIT (int, 0);
-    if (!darr) goto cleanup;
+    if (!darr)
+    {
+        log_error ("DARR_INIT()");
+        goto cleanup;
+    }
 
     /* extend */
+    errno = 0;
     void *temp = darr_push (darr, 10);
-    if (!temp) goto cleanup;
+    if (!temp)
+    {
+        log_error ("darr_push()");
+        goto cleanup;
+    }
     darr = temp;
 
     darr[0] = 0;
@@ -25,14 +45,31 @@ main (int argc, char **argv)
     darr[8] = 8;
     darr[9] = 9;
 
+    errno = 0;
     int result = 0;
     int *p_result = darr_pop (darr);
-    if (!p_result) goto cleanup;
+    if (!p_result)
+    {
+        log_error ("darr_pop()");
+        goto cleanup;
+    }
     result = *p_result;
+    printf ("result: %d\n", result);
 
-    (void)darr_slide (darr, 4);
+    errno = 0;
+    if (!darr_slide (darr, 4))
+    {
+        log_error ("darr_slide()");
+        goto cleanup;
+    }
 
     size_t count = darr_count (darr);
+    printf ("count:  %zu\n", count);
+
+    for (size_t i = 0; i < count; i++)
+    {
+        printf ("darr[%zu] = %d\n", i, darr[i]);
+    }
 
 cleanup:
     darr_free (darr); darr = NULL;
