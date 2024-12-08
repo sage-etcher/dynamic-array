@@ -4,7 +4,6 @@
 #include <errno.h>
 #include "sei.h"
 #include <stddef.h>
-#include <stdio.h>
 
 
 size_t
