@@ -29,12 +29,16 @@ typedef struct dynamic_array dynamic_array_t;
 
 
 static dynamic_array_t *darr_i_init (size_t type_size, size_t n);
-static dynamic_array_t *darr_i_realloc (dynamic_array_t *s);
+static void darr_i_free (dynamic_array_t *s);
+static size_t darr_i_calc_size (size_t type_size, size_t new_alloc);
+static size_t darr_i_calc_alloc (size_t count);
+static dynamic_array_t *darr_i_realloc (dynamic_array_t *s, size_t size);
+static dynamic_array_t *darr_i_extend (dynamic_array_t *s);
 static int darr_i_add (dynamic_array_t *s, size_t n);
 static int darr_i_sub (dynamic_array_t *s, size_t n);
-static void darr_i_free (dynamic_array_t *s);
 
 
+/* public api */
 void *
 darr_init (size_t type_size, size_t n)
 {
@@ -59,7 +63,7 @@ darr_push (void *s_arr, size_t n)
     s = DARR_REMOVE_HEADER (s_arr, data);
     if (darr_i_add (s, n)) return NULL;
 
-    s = darr_i_realloc (s);
+    s = darr_i_extend (s);
     if (!s) return NULL;
 
     return DARR_MAKE_HEADER (s, data);
@@ -132,11 +136,13 @@ darr_free (void *s_arr)
 }
 
 
+/* private api */
 static dynamic_array_t *
 darr_i_init (size_t type_size, size_t n)
 {
-    errno_t ret_alloc;
     dynamic_array_t *s = NULL;
+    size_t initial_alloc = 0;
+    size_t initial_size  = 0;
 
     if (type_size == 0)
     {
@@ -144,32 +150,72 @@ darr_i_init (size_t type_size, size_t n)
         return NULL;
     }
 
-    s = malloc (sizeof (dynamic_array_t));
+    initial_alloc = darr_i_calc_alloc (n);
+    if (initial_alloc == 0) return NULL;
+
+    initial_size = darr_i_calc_size (type_size, initial_alloc);
+    if (initial_size == 0) return NULL;
+
+    s = darr_i_realloc (NULL, initial_size);
     if (!s) return NULL;
 
     s->type_size = type_size;
-    s->alloc     = 0;
-    s->count     = n;
+    s->alloc     = initial_alloc;
+    s->count     = 0;
 
-    void *temp = darr_i_realloc (s);
-    if (!temp)
+    return s;
+}
+
+
+static size_t
+darr_i_calc_alloc (size_t count)
+{
+    size_t new_alloc = pow2s (log2s (count) + 1);
+    return new_alloc;
+}
+
+
+static size_t
+darr_i_calc_size (size_t type_size, size_t new_alloc)
+{
+    size_t new_size  = 0;
+
+    if ((new_alloc == 0) || (type_size == 0))
     {
-        ret_alloc = errno;
-        darr_i_free (s);
-        s = NULL;
-        errno = ret_alloc;
+        errno = EINVAL;
+        return 0;
+    }
+
+    if ((SEI_MULT_SIZE (type_size, new_alloc)) ||
+        (SEI_ADD_SIZE (sizeof (dynamic_array_t), (type_size * new_alloc))))
+    {
+        errno = ERANGE;
+        return 0;
+    }
+    new_size = type_size * new_alloc + sizeof (dynamic_array_t);
+
+    return new_size;
+}
+
+
+static dynamic_array_t *
+darr_i_realloc (dynamic_array_t *s, size_t size)
+{
+    if (size == 0)
+    {
+        errno = EINVAL;
         return NULL;
     }
+    void *temp = realloc (s, size);
+    if (!temp) return NULL;
     s = temp;
-
-    s->count = 0;
 
     return s;
 }
 
 
 static dynamic_array_t *
-darr_i_realloc (dynamic_array_t *s)
+darr_i_extend (dynamic_array_t *s)
 {
     size_t new_alloc = 0;
     size_t new_size  = 0;
@@ -185,17 +231,15 @@ darr_i_realloc (dynamic_array_t *s)
     if (s->alloc > s->count) return s;
 
     /* allocate more */
-    new_alloc = pow2s (log2s (s->count) + 1);
-    if ((new_alloc == 0) ||
-        (SEI_MULT_SIZE (s->type_size, new_alloc)) ||
-        (SEI_ADD_SIZE (sizeof (dynamic_array_t), (s->type_size * new_alloc))))
-    {
-        errno = ERANGE;
-        return NULL;
-    }
-    new_size = s->type_size * new_alloc + sizeof (dynamic_array_t);
-    void *temp = realloc (s, new_size);
+    new_alloc = darr_i_calc_alloc (s->count);
+    if (new_alloc == 0) return NULL;
+
+    new_size = darr_i_calc_size (s->type_size, new_alloc);
+    if (new_size == 0) return NULL;
+
+    void *temp = darr_i_realloc (s, new_size);
     if (!temp) return NULL;
+
     s = temp;
     s->alloc = new_alloc;
 
