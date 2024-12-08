@@ -10,7 +10,7 @@
 size_t
 log2s (size_t x)
 {
-    size_t result = sizeof (size_t) * CHAR_BIT - clzll(x) - 1;
+    size_t result = sizeof (size_t) * CHAR_BIT - clzsz (x) - 1;
     return result;
 }
 
