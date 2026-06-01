@@ -67,6 +67,8 @@ void darr_free(void *s_arr);
 #include <stdio.h>
 #include <stdlib.h>
 
+#define DARR(arr) ((void *)arr)
+
 int main(void) {
     char **str_arr = DARR_INIT(char *, 1); // initialize array of strings
     size_t i = 0;
@@ -82,7 +84,7 @@ int main(void) {
         }
 
         // increment dynamic array count, safely
-        void *tmp = darr_push(str_arr, 1);
+        void *tmp = darr_push(DARR(str_arr, 1);
         if (tmp == NULL) {
             break; // on error, stop adding items, go straight to printing
         }
@@ -90,16 +92,23 @@ int main(void) {
         str_arr[i++] = input_str;
     } while (input_str == NULL || *input_str != '\0'); // loop until an empty line is input
 
-    free(darr_pop(str_arr)); // remove trailing empty line
-
-    // print lines last in first out
-    for (i = darr_count(str_arr); i > 0; i--) {
-        char *read_str = darr_pop(str_arr);
-        printf("%s\n", read_str);
-        free(read_str); // after printing the line, free it's memory
+    // remove trailing empty line
+    tmp = darr_pop(DARR(str_arr));
+    if (tmp != NULL) {
+        free(*(char **)tmp);
     }
 
-    darr_free(str_arr); // cleanup remaining heap objects
+    // print lines last in first out
+    for (i = darr_count(DARR(str_arr)); i > 0; i--) {
+        char **p_read_str = (char **)darr_pop(DARR(str_arr));
+        if (p_read_str == NULL) {
+            continue;
+        }
+        printf("%s\n", *read_str);
+        free(*read_str); // after printing the line, free it's memory
+    }
+
+    darr_free(DARR(str_arr)); // cleanup remaining heap objects
     return 0;
 }
 
