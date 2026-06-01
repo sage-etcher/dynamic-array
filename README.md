@@ -23,7 +23,7 @@ All functions are `NULL` safe and set `errno` in the case of an error.
 
 
 // core initializer function, identical to DARR_INIT except that darr_init()
-// takes a sizeof(type) instead of type directly
+// takes a sizeof(type) instead of type directly. type_size cannot be 0.
 // refer to DARR_INIT() for example.
 void *darr_init(size_t type_size, size_t n);
 
