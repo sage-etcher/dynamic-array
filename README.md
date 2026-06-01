@@ -1,6 +1,12 @@
 # Lib Dynamic Array
 
-Header-struct based Heap allocated dynamic length array.
+Dynamic-Array implementation using C11 Header-Structs for transparent indexing,
+and a power of 2 alloc calculation to reduce realloc calls, improving
+preformance. 
+
+Additionally all maths are checked for under/overflow prior to evalutation.
+
+All functions are `NULL` safe and set `errno` in the case of an error.
 
 ```c
 // darr.h - implementations
@@ -10,7 +16,7 @@ Header-struct based Heap allocated dynamic length array.
 // is passed.
 
 // initialize a new dynamic array using using type and initial count
-// create a new int array w/ 10 slots allocated, and a count of 0 
+// create a new int array w/ atleast 10 slots allocated, and a count of 0 
 //     int *my_int_darr = DARR_INIT(int, 10);
 //
 #define DARR_INIT(t, n) (t *)(darr_init (_Alignof (t), (n)))
