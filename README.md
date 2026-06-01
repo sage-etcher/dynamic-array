@@ -84,7 +84,7 @@ int main(void) {
         }
 
         // increment dynamic array count, safely
-        void *tmp = darr_push(DARR(str_arr, 1);
+        void *tmp = darr_push(DARR(str_arr), 1);
         if (tmp == NULL) {
             break; // on error, stop adding items, go straight to printing
         }
